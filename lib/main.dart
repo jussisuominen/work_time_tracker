@@ -1,26 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:intl/intl.dart';
+import 'package:work_time_tracker/widgets/time_used_view.dart';
 import 'package:work_time_tracker/working_session_model.dart';
+import 'package:work_time_tracker/working_session_view.dart';
+import 'package:work_time_tracker/label_texts.dart';
 
 void main() {
   initializeDateFormatting();
   runApp(const MainApp());
 }
-
-const Map<String, String> finnishLabels = {
-  'appTitle': 'Työskentelyajan seuranta',
-  'startWorking': 'Aloita työskentely',
-  'stopWorking': 'Lopeta työskentely',
-  'youStartedWorking': 'Aloitit työskentelyn',
-  'youStoppedWorking': 'Lopetit työskentelyn',
-  'youWorked': 'Työskentelit',
-  'hours': 'tuntia',
-  'minutes': 'minuuttia',
-  'seconds': 'sekuntia'
-};
-
-const Map<String, String> labels = finnishLabels;
 
 class MainApp extends StatefulWidget {
   const MainApp({super.key});
@@ -30,10 +19,11 @@ class MainApp extends StatefulWidget {
 }
 
 class _MainAppState extends State<MainApp> {
-  List<WorkingSessionModel> _workingSessions = [];
+  final List<WorkingSessionModel> _workingSessions = [];
   late WorkingSessionModel _currentWorkingSession;
   bool working = false;
   late DateFormat dateFormat;
+  Duration _timeUsedToday = const Duration();
 
   @override
   void initState() {
@@ -53,8 +43,13 @@ class _MainAppState extends State<MainApp> {
   }
 
   void stopWorking() {
+    _currentWorkingSession.stoppedWorking = DateTime.now();
+    _currentWorkingSession.workDuration = _currentWorkingSession.stoppedWorking!
+        .difference(_currentWorkingSession.workStarted!);
+
+    _timeUsedToday += _currentWorkingSession.workDuration!;
+
     setState(() {
-      _currentWorkingSession.stoppedWorking = DateTime.now();
       working = false;
     });
   }
@@ -72,16 +67,11 @@ class _MainAppState extends State<MainApp> {
             : Text(labels['startWorking']!,
                 style: Theme.of(context).textTheme.titleMedium));
 
-    String youWorkedLabel = labels['youWorked']!;
-    String hoursLabel = labels['hours']!;
-    String minutesLabel = labels['minutes']!;
-    String secondsLabel = labels['seconds']!;
-
-    if (_currentWorkingSession.stoppedWorking != null) {
-      _currentWorkingSession.workDuration = _currentWorkingSession
-          .stoppedWorking!
-          .difference(_currentWorkingSession.workStarted!);
-    }
+    // if (_currentWorkingSession.stoppedWorking != null) {
+    //   _currentWorkingSession.workDuration = _currentWorkingSession
+    //       .stoppedWorking!
+    //       .difference(_currentWorkingSession.workStarted!);
+    // }
 
     return MaterialApp(
         home: Scaffold(
@@ -97,15 +87,22 @@ class _MainAppState extends State<MainApp> {
               ),
               for (WorkingSessionModel workingSession in _workingSessions)
                 if (workingSession.workStarted != null)
-                  Text(
-                      [
-                        '${labels['youStartedWorking']!}: ${dateFormat.format(workingSession.workStarted!)}.',
-                        if (workingSession.stoppedWorking != null)
-                          '${labels['youStoppedWorking']!}: ${dateFormat.format(workingSession.stoppedWorking!)}.\n\n',
-                        if (workingSession.stoppedWorking != null)
-                          '$youWorkedLabel ${workingSession.workDuration!.inHours} $hoursLabel ${workingSession.workDuration!.inMinutes} $minutesLabel, ${workingSession.workDuration!.inSeconds} $secondsLabel\n'
-                      ].join(),
-                      style: Theme.of(context).textTheme.titleLarge),
+                  Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: WorkingSessionView(
+                      workingSession: workingSession,
+                    ),
+                  ),
+              const Divider(),
+              TimeUsedView(
+                label: 'Olet työskennellyt tänään',
+                andLabel: labels['and']!,
+                hoursLabel: labels['hours']!,
+                minutesLabel: labels['minutes']!,
+                secondsLabel: labels['seconds']!,
+                timeUsed: _timeUsedToday,
+              ),
+              const Divider(),
               startWorkingButton,
             ],
           ),
