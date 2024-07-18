@@ -33,14 +33,14 @@ class TimeUsedView extends StatelessWidget {
       ),
       const InfoText(text: ', '),
       BoldText(
-        text: timeUsed.inMinutes.toString(),
+        text: '${timeUsed.inMinutes % 60}',
       ),
       InfoText(
         text: ' $minutesLabel',
       ),
       InfoText(text: ' $andLabel '),
       BoldText(
-        text: timeUsed.inSeconds.toString(),
+        text: '${timeUsed.inSeconds % 60}',
       ),
       InfoText(
         text: ' $secondsLabel',

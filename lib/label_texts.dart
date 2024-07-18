@@ -8,7 +8,9 @@ const Map<String, String> finnishLabels = {
   'hours': 'tuntia',
   'minutes': 'minuuttia',
   'seconds': 'sekuntia',
-  'and': 'ja'
+  'and': 'ja',
+  'youHaveWorkedToday': 'Olet työskennellyt tänään',
+  'clearData': 'Poista data'
 };
 
 const Map<String, String> labels = finnishLabels;
